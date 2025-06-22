@@ -89,7 +89,7 @@ class User(Resource):
         user = UserModel.query.filter_by(id=id).first()
         if not user:
             abort(404, message = "User not found")
-        if user.id != get_jwt_identity():
+        if user.id != int(get_jwt_identity()):
             abort(403, message = "unauthorized to modify user")
         user.name = args['name']
         user.email = args['email']
@@ -103,7 +103,7 @@ class User(Resource):
         user = UserModel.query.filter_by(id=id).first()
         if not user:
             abort(404, message = "User not found")
-        if user.id != get_jwt_identity():
+        if user.id != int(get_jwt_identity()):
             abort(403, message = "unauthorized to delete user")
         db.session.delete(user)
         db.session.commit()
