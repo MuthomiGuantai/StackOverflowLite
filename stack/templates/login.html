@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container jumbotron " style="width: 40em; ">
+    <form method="POST" action="">
+        {{form.hidden_tag()}}
+        <div class="form-group">
+            {{form.email.label(class = "form-control-label")}}
+            {{form.email(class = "form-control form-control")}}
+
+        </div>
+        <div class="form-group">
+            {{form.password.label(class = "form-control-label")}}
+            {{form.password(class = "form-control form-control")}}
+
+        </div>
+        <div class="form-group">
+            {{form.submit.label(class = "btn btn-outline-info")}}
+
+
+        </div>
+
+    </form>
+    <div class="border-top pt-3">
+        <small class="text muted"></small>
+        <p>You don't have an account?<a href="{{url_for('register')}}">SignUp</a> </p>
+    </div>
+</div>
+{% endblock %}
