@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+  <div class="row" >
+    <div class="col-sm-2">
+      <p><strong>Categories</strong></p>
+        <a class="nav-item nav-link" href="#">Python</a>
+        <a class="nav-item nav-link" href="#">Java</a>
+        <a class="nav-item nav-link" href="#">C++</a>
+        <a class="nav-item nav-link" href="#">C</a>
+        <a class="nav-item nav-link" href="#">JavaScript</a>
+    </div>
+    <div class="col-sm-8">
+      <ul class="group-item" style=" margin-left: 0;">
+        {%for question in questions %}
+        <li class="list-group-item" ><a href="question/{{question.id}}">{{question.title}}</a></li>
+        <li class="list-group-item">{{ question.content}}</li>
+        <li class="list-group-item">{{ question.author}}</li>
+        <li class="list-group-item">{{ question.date_posted}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="col-sm-2">
+      <p>Recently ask Questions</p>
+      <p>python question</p>
+      <p>Recently ask Questions</p>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
