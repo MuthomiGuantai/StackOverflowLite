@@ -5,7 +5,7 @@ from flask_jwt_extended import JWTManager
 from datetime import timedelta
 import os
 
-from stack.forms import UserForm, LoginForm
+from stack.forms import UserForm, LoginForm, QuestionForm
 
 questions = [
     {
@@ -61,7 +61,7 @@ def create_app():
         form = LoginForm()
         if form.validate_on_submit():
             # This assumes you handle form submission via the API
-            return redirect(url_for('home'))
+            return redirect(url_for('question'))
         return render_template("login.html", title="Login", form=form)
 
     @app.route("/about")
@@ -73,8 +73,25 @@ def create_app():
         form = UserForm()
         if form.validate_on_submit():
             # This assumes you handle form submission via the API
-            return redirect(url_for('home'))
+            return redirect(url_for('question'))
         return render_template("register.html", title="Register", form=form)
+
+    @app.route('/question', methods=['GET', 'POST'])
+    def question():
+        form = QuestionForm()
+        if form.validate_on_submit():
+            print("Question form validated successfully:", form.data)  # Debug
+            # Save question to database
+            question = QuestionModel(
+                title=form.title.data,
+                content=form.content.data,
+                author="Anonymous"  # Placeholder; replace with authenticated user if needed
+            )
+            db.session.add(question)
+            db.session.commit()
+            return redirect(url_for('about'))
+        print("Question form submission failed:", form.data, form.errors)  # Debug
+        return render_template("question.html", title="Ask a Question", form=form, errors=form.errors)
 
     with app.app_context():
         db.create_all()  # Create database tables

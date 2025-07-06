@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, TextAreaField, SubmitField
 from wtforms.validators import DataRequired, Email, Length, EqualTo
 from flask_restful import fields
 
@@ -14,6 +14,12 @@ class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(message='User email is required'), Email(), Length(max=80)])
     password = PasswordField('Password', validators=[DataRequired(message='User password is required')])
     submit = SubmitField('Login')
+
+class QuestionForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired(message='Question title is required'), Length(max=200)])
+    content = TextAreaField('Content', validators=[DataRequired(message='Question content is required'), Length(max=5000)])
+    submit = SubmitField('Post Question')
+
 
 userFields = {
     'id': fields.Integer,
