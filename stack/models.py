@@ -1,5 +1,5 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-from stack import db
+from stack.dependencies import db
 from datetime import datetime
 
 
