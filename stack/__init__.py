@@ -1,11 +1,12 @@
 from flask import Flask,render_template,redirect,url_for
-from flask_sqlalchemy import SQLAlchemy
-from flask_restful import Api
-from flask_jwt_extended import JWTManager
 from datetime import timedelta
 import os
 
+from flask_restful import Api
+
 from stack.forms import UserForm, LoginForm, QuestionForm
+from stack.models import QuestionModel
+from stack.dependencies import SQLAlchemy,api,JWTManager
 
 questions = [
     {
