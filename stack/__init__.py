@@ -2,11 +2,12 @@ from flask import Flask,render_template,redirect,url_for
 from datetime import timedelta
 import os
 
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_restful import Api
 
 from stack.forms import UserForm, LoginForm, QuestionForm
-from stack.models import QuestionModel
-from stack.dependencies import SQLAlchemy,api,JWTManager
+from stack.models import QuestionModel, UserModel
+from stack.dependencies import db,api,jwt
 
 questions = [
     {
@@ -32,9 +33,7 @@ questions = [
     }
 ]
 
-db = SQLAlchemy()
-api = Api()
-jwt = JWTManager()
+
 
 def create_app():
     app = Flask(__name__)
@@ -65,9 +64,9 @@ def create_app():
             return redirect(url_for('question'))
         return render_template("login.html", title="Login", form=form)
 
-    @app.route("/about")
+    """@app.route("/about")
     def about():
-        return render_template("about.html")
+        return render_template("about.html")"""
 
     @app.route('/register', methods=['GET', 'POST'])
     def register():
@@ -92,9 +91,19 @@ def create_app():
             db.session.commit()
             return redirect(url_for('about'))
         print("Question form submission failed:", form.data, form.errors)  # Debug
+
         return render_template("question.html", title="Ask a Question", form=form, errors=form.errors)
 
+
+
+    @app.route("/about")
+    def about():
+        from stack.models import QuestionModel
+        questions = QuestionModel.query.order_by(QuestionModel.date_posted.desc()).all()
+        return render_template("about.html", questions=questions)
+    
     with app.app_context():
+
         db.create_all()  # Create database tables
 
     return app
