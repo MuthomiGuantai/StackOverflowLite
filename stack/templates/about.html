@@ -1,3 +1,4 @@
+<!--
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,5 +7,31 @@
 </head>
 <body>
 
+</body>
+</html>
+-->
+
+<!-- templates/about.html -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <title>About</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="{{url_for('static', filename = 'css/bootstrap.min.css')}}">
+</head>
+<body>
+<h1>About Page</h1>
+
+<h2>Questions Asked:</h2>
+<ul>
+  {% for question in questions %}
+    <li><strong>{{ question.title }}</strong>: {{ question.content }}</li>
+  {% endfor %}
+</ul>
 </body>
 </html>

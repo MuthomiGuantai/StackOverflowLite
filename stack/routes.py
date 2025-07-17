@@ -5,6 +5,7 @@ from .forms import UserForm, LoginForm, userFields
 from .models import UserModel, db
 
 
+
 class Register(Resource):
     @marshal_with(userFields)
     def post(self):
@@ -88,3 +89,5 @@ class User(Resource):
         db.session.delete(user)
         db.session.commit()
         return user, 204
+
+
