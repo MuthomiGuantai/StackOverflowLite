@@ -5,33 +5,9 @@ import os
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_restful import Api
 
-from stack.forms import UserForm, LoginForm, QuestionForm
-from stack.models import QuestionModel, UserModel
+from stack.forms import UserForm, LoginForm, QuestionForm, AnswerForm
+from stack.models import QuestionModel, UserModel, AnswerModel
 from stack.dependencies import db,api,jwt
-
-questions = [
-    {
-        "id": 1,
-        "title": "How does one install Flask in Virtual Environment",
-        "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. ",
-        "author": "SimonOkello",
-        "date_posted": "25-12-2018"
-    },
-    {
-        "id": 2,
-        "title": "How does one install SqlAlchemy in Virtual Environment",
-        "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. ",
-        "author": "Enock",
-        "date_posted": "24-12-2018"
-    },
-    {
-        "id": 3,
-        "title": "How does one install Pylint in Virtual Environment",
-        "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. ",
-        "author": "Jeff",
-        "date_posted": "23-12-2018"
-    }
-]
 
 
 
@@ -54,6 +30,7 @@ def create_app():
 
     @app.route('/')
     def home():
+        questions = QuestionModel.query.order_by(QuestionModel.date_posted.desc()).all()
         return render_template("index.html", title="HomePage", questions=questions)
 
     @app.route('/login', methods=['GET', 'POST'])
@@ -94,6 +71,20 @@ def create_app():
 
         return render_template("question.html", title="Ask a Question", form=form, errors=form.errors)
 
+    @app.route('/answer/<int:question_id>', methods=['GET', 'POST'])
+    def answer(question_id):
+        form = AnswerForm()
+        question = QuestionModel.query.filter_by(id=question_id).first_or_404()
+        if form.validate_on_submit():
+            answer = AnswerModel(
+                content=form.content.data,
+                author="Anonymous",  # Replace with authenticated user if needed
+                question_id=question_id
+            )
+            db.session.add(answer)
+            db.session.commit()
+            return redirect(url_for('home'))
+        return render_template("answer.html", title="Post an Answer", form=form, question=question, errors=form.errors)
 
 
     @app.route("/about")

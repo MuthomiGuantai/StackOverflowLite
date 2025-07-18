@@ -20,6 +20,11 @@ class QuestionForm(FlaskForm):
     content = TextAreaField('Content', validators=[DataRequired(message='Question content is required'), Length(max=5000)])
     submit = SubmitField('Post Question')
 
+class AnswerForm(FlaskForm):
+    content = TextAreaField('Answer', validators=[DataRequired(message='Answer content is required'), Length(max=5000)])
+    submit = SubmitField('Post Answer')
+
+
 
 userFields = {
     'id': fields.Integer,
