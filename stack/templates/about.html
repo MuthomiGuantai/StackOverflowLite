@@ -1,37 +1,29 @@
-<!--
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>About</title>
-</head>
-<body>
+{% extends "layout.html" %}
 
-</body>
-</html>
--->
-
-<!-- templates/about.html -->
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-
-    <title>About</title>
-
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="stylesheet" href="{{url_for('static', filename = 'css/bootstrap.min.css')}}">
-</head>
-<body>
-<h1>About Page</h1>
-
+{% block content %}
 <h2>Questions Asked:</h2>
-<ul>
-  {% for question in questions %}
-    <li><strong>{{ question.title }}</strong>: {{ question.content }}</li>
-  {% endfor %}
-</ul>
-</body>
-</html>
+
+{% for question in questions %}
+<div class="question">
+    <h3>{{ question.title }}:</h3>
+    <p>{{ question.content }}</p>
+    <p><strong>Author:</strong> {{ question.author }} | <strong>Posted:</strong> {{ question.date_posted.strftime('%Y-%m-%d') }}</p>
+    <h4>Answers:</h4>
+    {% if question.answers %}
+    <ul>
+        {% for answer in question.answers %}
+        <li>
+            <p>{{ answer.content }}</p>
+            <p><strong>Author:</strong> {{ answer.author }} | <strong>Posted:</strong> {{ answer.date_posted.strftime('%Y-%m-%d') }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No answers yet.</p>
+    {% endif %}
+    <a href="{{ url_for('answer', question_id=question.id) }}">Post an Answer</a>
+</div>
+<hr>
+{% endfor %}
+{% endblock %}

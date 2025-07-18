@@ -22,6 +22,17 @@ class QuestionModel(db.Model):
     content = db.Column(db.Text, nullable=False)
     author = db.Column(db.String(40), nullable=False)
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    answers = db.relationship('AnswerModel', backref='question', lazy=True)
 
     def __repr__(self):
         return f"Question(title = {self.title}, author = {self.author}, date_posted = {self.date_posted})"
+
+class AnswerModel(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    author = db.Column(db.String(40), nullable=False)
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    question_id = db.Column(db.Integer, db.ForeignKey('question_model.id'), nullable=False)
+
+    def __repr__(self):
+        return f"Answer(content = {self.content[:50]}, author = {self.author}, date_posted = {self.date_posted})"

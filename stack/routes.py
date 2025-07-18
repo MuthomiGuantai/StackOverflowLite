@@ -1,9 +1,8 @@
 from flask import request, jsonify
 from flask_restful import Resource, abort, marshal_with
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
-from .forms import UserForm, LoginForm, userFields
-from .models import UserModel, db
-
+from .forms import UserForm, LoginForm, userFields, AnswerForm
+from .models import UserModel, db, QuestionModel, AnswerModel
 
 
 class Register(Resource):
@@ -90,4 +89,20 @@ class User(Resource):
         db.session.commit()
         return user, 204
 
-
+    class Answer(Resource):
+        def post(self, question_id):
+            form = AnswerForm()
+            if not form.validate_on_submit():
+                errors = {field: errors for field, errors in form.errors.items()}
+                abort(400, message=errors)
+            question = QuestionModel.query.filter_by(id=question_id).first()
+            if not question:
+                abort(404, message="Question not found")
+            answer = AnswerModel(
+                content=form.content.data,
+                author="Anonymous",  # Replace with authenticated user if needed
+                question_id=question_id
+            )
+            db.session.add(answer)
+            db.session.commit()
+            return {"message": "Answer posted successfully"}, 201

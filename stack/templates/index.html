@@ -3,31 +3,37 @@
 
 {% block content %}
 <div class="container">
-  <div class="row" >
-    <div class="col-sm-2">
-      <p><strong>Categories</strong></p>
-        <a class="nav-item nav-link" href="#">Python</a>
-        <a class="nav-item nav-link" href="#">Java</a>
-        <a class="nav-item nav-link" href="#">C++</a>
-        <a class="nav-item nav-link" href="#">C</a>
-        <a class="nav-item nav-link" href="#">JavaScript</a>
-    </div>
-    <div class="col-sm-8">
-      <ul class="group-item" style=" margin-left: 0;">
-        {%for question in questions %}
-        <li class="list-group-item" ><a href="question/{{question.id}}">{{question.title}}</a></li>
-        <li class="list-group-item">{{ question.content}}</li>
-        <li class="list-group-item">{{ question.author}}</li>
-        <li class="list-group-item">{{ question.date_posted}}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    <div class="col-sm-2">
-      <p>Recently ask Questions</p>
-      <p>python question</p>
-      <p>Recently ask Questions</p>
-    </div>
-  </div>
+    <h2>Categories</h2>
+    <ul>
+        <li>Python</li>
+        <li>Java</li>
+        <li>C++</li>
+        <li>C</li>
+        <li>JavaScript</li>
+    </ul>
 
+    <h2>Recently Asked Questions</h2>
+    {% for question in questions %}
+    <div class="question">
+        <h3>{{ question.title }}</h3>
+        <p>{{ question.content }}</p>
+        <p><strong>Author:</strong> {{ question.author }} | <strong>Posted:</strong> {{ question.date_posted.strftime('%Y-%m-%d') }}</p>
+        <h4>Answers:</h4>
+        {% if question.answers %}
+        <ul>
+            {% for answer in question.answers %}
+            <li>
+                <p>{{ answer.content }}</p>
+                <p><strong>Author:</strong> {{ answer.author }} | <strong>Posted:</strong> {{ answer.date_posted.strftime('%Y-%m-%d') }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No answers yet.</p>
+        {% endif %}
+        <a href="{{ url_for('answer', question_id=question.id) }}">Post an Answer</a>
+    </div>
+    <hr>
+    {% endfor %}
 </div>
 {% endblock %}

@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Post an Answer</h2>
+    <h3>Question: {{ question.title }}</h3>
+    <p>{{ question.content }}</p>
+    <form method="POST" action="{{ url_for('answer', question_id=question.id) }}">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            <label for="content">{{ form.content.label }}</label>
+            {{ form.content(class="form-control", rows=5) }}
+            {% if form.content.errors %}
+            <ul class="errors">
+                {% for error in form.content.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+</div>
+{% endblock %}
