@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Profile</h1>
+    <h3>Welcome, {{ user.name }}!</h3>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+
+    <h4>Your Questions</h4>
+    {% if questions %}
+    <ul>
+        {% for question in questions %}
+        <li>
+            <h5>{{ question.title }}</h5>
+            <p>{{ question.content }}</p>
+            <p><strong>Posted:</strong> {{ question.date_posted.strftime('%Y-%m-%d') }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>You haven't posted any questions yet.</p>
+    {% endif %}
+
+    <h4>Your Answers</h4>
+    {% if answers %}
+    <ul>
+        {% for answer in answers %}
+        <li>
+            <p>{{ answer.content }}</p>
+            <p><strong>Posted:</strong> {{ answer.date_posted.strftime('%Y-%m-%d') }}</p>
+            <p><strong>For Question:</strong> <a href="{{ url_for('answer', question_id=answer.question_id) }}">{{ answer.question.title }}</a></p>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>You haven't posted any answers yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="container jumbotron " style="width: 40em; ">
-    <form method="POST" action="">
+    <form method="POST" action="{{ url_for('login') }}">
         {{form.hidden_tag()}}
         <div class="form-group">
             {{form.email.label(class = "form-control-label")}}

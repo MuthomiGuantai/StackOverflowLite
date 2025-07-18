@@ -14,7 +14,7 @@ class Register(Resource):
             abort(400, message=errors)
         if UserModel.query.filter_by(email=form.email.data).first():
             abort(409, message="Email already registered")
-        user = UserModel(name=form.username.data, email=form.email.data)  # Changed form.name to form.username
+        user = UserModel(name=form.username.data, email=form.email.data)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
@@ -50,7 +50,7 @@ class Users(Resource):
             abort(400, message=errors)
         if UserModel.query.filter_by(email=form.email.data).first():
             abort(409, message="Email already registered")
-        user = UserModel(name=form.username.data, email=form.email.data)  # Changed form.name to form.username
+        user = UserModel(name=form.username.data, email=form.email.data)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
@@ -71,7 +71,7 @@ class User(Resource):
             abort(404, message="User not found")
         if user.id != int(get_jwt_identity()):
             abort(403, message="Unauthorized to modify user")
-        user.name = form.username.data  # Changed form.name to form.username
+        user.name = form.username.data
         user.email = form.email.data
         user.set_password(form.password.data)
         db.session.commit()
@@ -91,6 +91,10 @@ class User(Resource):
 
     class Answer(Resource):
         def post(self, question_id):
+            user_id = get_jwt_identity()
+            user = UserModel.query.filter_by(id=user_id).first()
+            if not user:
+                abort(401, message="User not found")
             form = AnswerForm()
             if not form.validate_on_submit():
                 errors = {field: errors for field, errors in form.errors.items()}
@@ -100,7 +104,7 @@ class User(Resource):
                 abort(404, message="Question not found")
             answer = AnswerModel(
                 content=form.content.data,
-                author="Anonymous",  # Replace with authenticated user if needed
+                author=user.name,
                 question_id=question_id
             )
             db.session.add(answer)
