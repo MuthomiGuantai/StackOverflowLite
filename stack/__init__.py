@@ -163,7 +163,7 @@ def create_app():
         questions = QuestionModel.query.order_by(QuestionModel.date_posted.desc()).all()
         return render_template("about.html", questions=questions)
 
-    @app.route('/profile')
+    @app.route('/profile', methods=['GET', 'POST'])
     @jwt_required()
     def profile():
         user_id = get_jwt_identity()
@@ -171,9 +171,26 @@ def create_app():
         if not user:
             flash("User not found. Please log in again.", "error")
             return redirect(url_for('login'))
+        form = UserForm()
+        # Exclude password fields for profile editing
+        form.password.validators = []
+        form.confirm_password.validators = []
+        if form.validate_on_submit():
+            if UserModel.query.filter_by(email=form.email.data).first() and form.email.data != user.email:
+                flash("Email already registered by another user.", "error")
+            else:
+                user.name = form.username.data
+                user.email = form.email.data
+                db.session.commit()
+                flash("Profile updated successfully!", "success")
+                return redirect(url_for('profile'))
+        elif request.method == 'GET':
+            form.username.data = user.name
+            form.email.data = user.email
         questions = QuestionModel.query.filter_by(author=user.name).order_by(QuestionModel.date_posted.desc()).all()
         answers = AnswerModel.query.filter_by(author=user.name).order_by(AnswerModel.date_posted.desc()).all()
-        return render_template("profile.html", user=user, title="profile", questions=questions, answers=answers)
+        return render_template("profile.html", user=user, title="Profile", questions=questions, answers=answers,
+                               form=form)
 
     @app.route('/logout')
     def logout():

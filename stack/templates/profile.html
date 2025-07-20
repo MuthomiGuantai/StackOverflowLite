@@ -1,39 +1,89 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="container">
-    <h1>Profile</h1>
+<div class="container mt-5">
+    <h2>Profile</h2>
     <h3>Welcome, {{ user.name }}!</h3>
-    <p><strong>Email:</strong> {{ user.email }}</p>
 
-    <h4>Your Questions</h4>
+    <div id="profile-display">
+        <p><strong>Username:</strong> <span id="username-display">{{ user.name }}</span></p>
+        <p><strong>Email:</strong> <span id="email-display">{{ user.email }}</span></p>
+        <button id="edit-profile-btn" class="btn btn-primary mt-3">Edit Profile</button>
+    </div>
+
+    <div id="profile-edit-form" style="display: none;">
+        <h4>Edit Profile</h4>
+        <form method="POST" action="{{ url_for('profile') }}">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                <label for="username">Username</label>
+                {{ form.username(class="form-control", value=user.name) }}
+                {% if form.username.errors %}
+                    <div class="text-danger">
+                        {% for error in form.username.errors %}
+                            <small>{{ error }}</small><br>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                {{ form.email(class="form-control", value=user.email) }}
+                {% if form.email.errors %}
+                    <div class="text-danger">
+                        {% for error in form.email.errors %}
+                            <small>{{ error }}</small><br>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.submit(class="btn btn-primary mt-3") }}
+                <button type="button" id="cancel-edit-btn" class="btn btn-secondary mt-3">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <h4 class="mt-5">Your Questions</h4>
     {% if questions %}
-    <ul>
-        {% for question in questions %}
-        <li>
-            <h5>{{ question.title }}</h5>
-            <p>{{ question.content }}</p>
-            <p><strong>Posted:</strong> {{ question.date_posted.strftime('%Y-%m-%d') }}</p>
-        </li>
-        {% endfor %}
-    </ul>
+        <ul class="list-group">
+            {% for question in questions %}
+                <li class="list-group-item">
+                    <h5>{{ question.title }}</h5>
+                    <p>{{ question.content }}</p>
+                    <small>Posted: {{ question.date_posted.strftime('%Y-%m-%d') }}</small>
+                </li>
+            {% endfor %}
+        </ul>
     {% else %}
-    <p>You haven't posted any questions yet.</p>
+        <p>You haven't posted any questions yet.</p>
     {% endif %}
 
-    <h4>Your Answers</h4>
+    <h4 class="mt-5">Your Answers</h4>
     {% if answers %}
-    <ul>
-        {% for answer in answers %}
-        <li>
-            <p>{{ answer.content }}</p>
-            <p><strong>Posted:</strong> {{ answer.date_posted.strftime('%Y-%m-%d') }}</p>
-            <p><strong>For Question:</strong> <a href="{{ url_for('answer', question_id=answer.question_id) }}">{{ answer.question.title }}</a></p>
-        </li>
-        {% endfor %}
-    </ul>
+        <ul class="list-group">
+            {% for answer in answers %}
+                <li class="list-group-item">
+                    <p>{{ answer.content }}</p>
+                    <small>Posted: {{ answer.date_posted.strftime('%Y-%m-%d') }}</small>
+                    <small>For Question: {{ answer.question.title }}</small>
+                </li>
+            {% endfor %}
+        </ul>
     {% else %}
-    <p>You haven't posted any answers yet.</p>
+        <p>You haven't posted any answers yet.</p>
     {% endif %}
 </div>
+
+<script>
+document.getElementById('edit-profile-btn').addEventListener('click', function() {
+    document.getElementById('profile-display').style.display = 'none';
+    document.getElementById('profile-edit-form').style.display = 'block';
+});
+
+document.getElementById('cancel-edit-btn').addEventListener('click', function() {
+    document.getElementById('profile-edit-form').style.display = 'none';
+    document.getElementById('profile-display').style.display = 'block';
+});
+</script>
 {% endblock %}
