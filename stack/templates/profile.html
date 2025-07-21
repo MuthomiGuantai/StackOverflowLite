@@ -9,6 +9,7 @@
         <p><strong>Username:</strong> <span id="username-display">{{ user.name }}</span></p>
         <p><strong>Email:</strong> <span id="email-display">{{ user.email }}</span></p>
         <button id="edit-profile-btn" class="btn btn-primary mt-3">Edit Profile</button>
+        <button id="change-password-btn" class="btn btn-primary mt-3">Change Password</button>
     </div>
 
     <div id="profile-edit-form" style="display: none;">
@@ -40,6 +41,51 @@
             <div class="form-group">
                 {{ form.submit(class="btn btn-primary mt-3") }}
                 <button type="button" id="cancel-edit-btn" class="btn btn-secondary mt-3">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="change-password-form" style="display: none;">
+        <h4>Change Password</h4>
+        <form method="POST" action="{{ url_for('change_password') }}">
+            {{ change_password_form.hidden_tag() }}
+            <div class="form-group">
+                <label for="otp">OTP</label>
+                {{ change_password_form.otp(class="form-control", placeholder="Enter 6-digit OTP") }}
+                {% if change_password_form.otp.errors %}
+                    <div class="text-danger">
+                        {% for error in change_password_form.otp.errors %}
+                            <small>{{ error }}</small><br>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="new_password">New Password</label>
+                {{ change_password_form.new_password(class="form-control", placeholder="Enter new password") }}
+                {% if change_password_form.new_password.errors %}
+                    <div class="text-danger">
+                        {% for error in change_password_form.new_password.errors %}
+                            <small>{{ error }}</small><br>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="confirm_new_password">Confirm New Password</label>
+                {{ change_password_form.confirm_new_password(class="form-control", placeholder="Confirm new password") }}
+                {% if change_password_form.confirm_new_password.errors %}
+                    <div class="text-danger">
+                        {% for error in change_password_form.confirm_new_password.errors %}
+                            <small>{{ error }}</small><br>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ change_password_form.submit(class="btn btn-primary mt-3") }}
+                <button type="button" id="request-otp-btn" class="btn btn-info mt-3">Request OTP</button>
+                <button type="button" id="cancel-password-btn" class="btn btn-secondary mt-3">Cancel</button>
             </div>
         </form>
     </div>
@@ -79,11 +125,34 @@
 document.getElementById('edit-profile-btn').addEventListener('click', function() {
     document.getElementById('profile-display').style.display = 'none';
     document.getElementById('profile-edit-form').style.display = 'block';
+    document.getElementById('change-password-form').style.display = 'none';
 });
 
 document.getElementById('cancel-edit-btn').addEventListener('click', function() {
     document.getElementById('profile-edit-form').style.display = 'none';
     document.getElementById('profile-display').style.display = 'block';
+});
+
+document.getElementById('change-password-btn').addEventListener('click', function() {
+    document.getElementById('profile-display').style.display = 'none';
+    document.getElementById('change-password-form').style.display = 'block';
+    document.getElementById('profile-edit-form').style.display = 'none';
+});
+
+document.getElementById('cancel-password-btn').addEventListener('click', function() {
+    document.getElementById('change-password-form').style.display = 'none';
+    document.getElementById('profile-display').style.display = 'block';
+});
+
+document.getElementById('request-otp-btn').addEventListener('click', function() {
+    fetch('{{ url_for("request_otp") }}', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+        })
+        .catch(error => {
+            alert('Error requesting OTP: ' + error);
+        });
 });
 </script>
 {% endblock %}

@@ -24,6 +24,11 @@ class AnswerForm(FlaskForm):
     content = TextAreaField('Answer', validators=[DataRequired(message='Answer content is required'), Length(max=5000)])
     submit = SubmitField('Post Answer')
 
+class ChangePasswordForm(FlaskForm):
+    otp = StringField('OTP', validators=[DataRequired(message='OTP is required'), Length(min=6, max=6, message='OTP must be 6 digits')])
+    new_password = PasswordField('New Password', validators=[DataRequired(message='New password is required'), Length(min=6, message='Password must be at least 6 characters')])
+    confirm_new_password = PasswordField('Confirm New Password', validators=[DataRequired(message='Password confirmation is required'), EqualTo('new_password', message='Passwords must match')])
+    submit = SubmitField('Change Password')
 
 
 userFields = {
