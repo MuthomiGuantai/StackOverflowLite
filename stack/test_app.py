@@ -6,7 +6,7 @@ from stack import create_app
 from stack.models import UserModel, QuestionModel, AnswerModel
 from stack import TokenBlocklist
 from stack.dependencies import db
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone  # Updated import for timezone
 import json
 
 
@@ -92,12 +92,13 @@ class FlaskAppTests(unittest.TestCase):
         """Test posting a question when authenticated."""
         with self.app.app_context():
             access_token = create_access_token(identity=str(self.user_id))
-        headers = {'Cookie': f'access_token_cookie={access_token}'}
-        data = {
-            'title': 'Test Question',
-            'content': 'This is a test question content.'
-        }
-        response = self.client.post('/question', data=data, headers=headers, follow_redirects=True)
+        # Use environ_base to properly set JWT cookie
+        response = self.client.post(
+            '/question',
+            data={'title': 'Test Question', 'content': 'This is a test question content.'},
+            environ_base={'HTTP_COOKIE': f'access_token_cookie={access_token}'},
+            follow_redirects=True
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Question posted successfully', response.data)
         with self.app.app_context():
@@ -123,10 +124,15 @@ class FlaskAppTests(unittest.TestCase):
             db.session.commit()
             question_id = question.id
             access_token = create_access_token(identity=str(self.user_id))
-        headers = {'Cookie': f'access_token_cookie={access_token}'}
-        data = {'content': 'This is a test answer.'}
-        response = self.client.post(f'/answer/{question_id}', data=data, headers=headers, follow_redirects=True)
+        # Use environ_base to properly set JWT cookie
+        response = self.client.post(
+            f'/answer/{question_id}',
+            data={'content': 'This is a test answer.'},
+            environ_base={'HTTP_COOKIE': f'access_token_cookie={access_token}'},
+            follow_redirects=True
+        )
         self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Answer posted successfully', response.data)  # Adjust based on actual response
         with self.app.app_context():
             answer = AnswerModel.query.filter_by(question_id=question_id).first()
             self.assertIsNotNone(answer)
@@ -136,12 +142,13 @@ class FlaskAppTests(unittest.TestCase):
         """Test updating user profile."""
         with self.app.app_context():
             access_token = create_access_token(identity=str(self.user_id))
-        headers = {'Cookie': f'access_token_cookie={access_token}'}
-        data = {
-            'username': 'updateduser',
-            'email': 'updated@example.com'
-        }
-        response = self.client.post('/profile', data=data, headers=headers, follow_redirects=True)
+        # Use environ_base to properly set JWT cookie
+        response = self.client.post(
+            '/profile',
+            data={'username': 'updateduser', 'email': 'updated@example.com'},
+            environ_base={'HTTP_COOKIE': f'access_token_cookie={access_token}'},
+            follow_redirects=True
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Profile updated successfully', response.data)
         with self.app.app_context():
@@ -154,14 +161,17 @@ class FlaskAppTests(unittest.TestCase):
         mocker.patch('flask_mail.Mail.send')  # Mock email sending
         with self.app.app_context():
             access_token = create_access_token(identity=str(self.user_id))
-        headers = {'Cookie': f'access_token_cookie={access_token}'}
-        response = self.client.post('/request-otp', headers=headers)
+        # Use environ_base to properly set JWT cookie
+        response = self.client.post(
+            '/request-otp',
+            environ_base={'HTTP_COOKIE': f'access_token_cookie={access_token}'}
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'OTP sent to your email', response.data)
         with self.app.app_context():
             user = UserModel.query.get(self.user_id)
             self.assertIsNotNone(user.otp)
-            self.assertTrue(user.otp_expiry > datetime.utcnow())
+            self.assertTrue(user.otp_expiry > datetime.now(timezone.UTC))  # Updated to timezone-aware
 
     def test_change_password_success(self, mocker):
         """Test successful password change with valid OTP."""
@@ -170,15 +180,19 @@ class FlaskAppTests(unittest.TestCase):
             access_token = create_access_token(identity=str(self.user_id))
             user = UserModel.query.get(self.user_id)
             user.otp = '123456'
-            user.otp_expiry = datetime.utcnow() + timedelta(minutes=5)
+            user.otp_expiry = datetime.now(timezone.UTC) + timedelta(minutes=5)  # Updated to timezone-aware
             db.session.commit()
-        headers = {'Cookie': f'access_token_cookie={access_token}'}
-        data = {
-            'otp': '123456',
-            'new_password': 'NewPassword456',
-            'confirm_password': 'NewPassword456'
-        }
-        response = self.client.post('/change-password', data=data, headers=headers, follow_redirects=True)
+        # Use environ_base to properly set JWT cookie
+        response = self.client.post(
+            '/change-password',
+            data={
+                'otp': '123456',
+                'new_password': 'NewPassword456',
+                'confirm_password': 'NewPassword456'
+            },
+            environ_base={'HTTP_COOKIE': f'access_token_cookie={access_token}'},
+            follow_redirects=True
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Password changed successfully', response.data)
         with self.app.app_context():
@@ -193,15 +207,19 @@ class FlaskAppTests(unittest.TestCase):
             access_token = create_access_token(identity=str(self.user_id))
             user = UserModel.query.get(self.user_id)
             user.otp = '123456'
-            user.otp_expiry = datetime.utcnow() + timedelta(minutes=5)
+            user.otp_expiry = datetime.now(timezone.UTC) + timedelta(minutes=5)  # Updated to timezone-aware
             db.session.commit()
-        headers = {'Cookie': f'access_token_cookie={access_token}'}
-        data = {
-            'otp': '654321',
-            'new_password': 'NewPassword456',
-            'confirm_password': 'NewPassword456'
-        }
-        response = self.client.post('/change-password', data=data, headers=headers, follow_redirects=True)
+        # Use environ_base to properly set JWT cookie
+        response = self.client.post(
+            '/change-password',
+            data={
+                'otp': '654321',
+                'new_password': 'NewPassword456',
+                'confirm_password': 'NewPassword456'
+            },
+            environ_base={'HTTP_COOKIE': f'access_token_cookie={access_token}'},
+            follow_redirects=True
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Invalid OTP', response.data)
 
@@ -209,8 +227,12 @@ class FlaskAppTests(unittest.TestCase):
         """Test logout functionality."""
         with self.app.app_context():
             access_token = create_access_token(identity=str(self.user_id))
-        headers = {'Cookie': f'access_token_cookie={access_token}'}
-        response = self.client.get('/logout', headers=headers, follow_redirects=True)
+        # Use environ_base to properly set JWT cookie
+        response = self.client.get(
+            '/logout',
+            environ_base={'HTTP_COOKIE': f'access_token_cookie={access_token}'},
+            follow_redirects=True
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Logged out successfully', response.data)
         with self.app.app_context():
