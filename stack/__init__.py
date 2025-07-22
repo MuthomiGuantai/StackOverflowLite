@@ -1,11 +1,15 @@
+import random
+import string
+from flask_mail import Mail, Message
+
 from flask import Flask, render_template, redirect, url_for, flash, make_response, request, jsonify
-from datetime import timedelta
+from datetime import timedelta, datetime
 import os
 
 from flask_jwt_extended import get_jwt_identity, jwt_required, create_access_token, verify_jwt_in_request, \
     unset_jwt_cookies, get_jwt
 
-from stack.forms import UserForm, LoginForm, QuestionForm, AnswerForm
+from stack.forms import UserForm, LoginForm, QuestionForm, AnswerForm, ChangePasswordForm
 from stack.models import QuestionModel, UserModel, AnswerModel
 from stack.dependencies import db,api,jwt
 
@@ -26,10 +30,17 @@ def create_app():
     app.config['JWT_COOKIE_SECURE'] = False  # Allow non-HTTPS for localhost testing
     app.config['JWT_COOKIE_SAMESITE'] = 'Lax'  # Ensure cookie is sent with redirects
     app.config['JWT_ACCESS_COOKIE_NAME'] = 'access_token_cookie'
+    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 587
+    app.config['MAIL_USE_TLS'] = True
+    app.config['MAIL_USERNAME'] = 'bruceydev@gmail.com'
+    app.config['MAIL_PASSWORD'] = 'hzxtvcynfoknlwzo'
+    app.config['MAIL_DEFAULT_SENDER'] = 'bruceydev@gmail.com'
 
     db.init_app(app)
     api.init_app(app)
     jwt.init_app(app)
+    mail = Mail(app)
 
     from .routes import Register, Login, Users, User
     api.add_resource(Register, '/api/register/')
@@ -86,8 +97,7 @@ def create_app():
                 return response
             else:
                 flash("Incorrect username or password.", "error")
-        else:
-         return render_template("login.html", title="Login", form=form)
+        return render_template("login.html", title="Login", form=form)
 
 
     @app.route('/register', methods=['GET', 'POST'])
@@ -189,8 +199,56 @@ def create_app():
             form.email.data = user.email
         questions = QuestionModel.query.filter_by(author=user.name).order_by(QuestionModel.date_posted.desc()).all()
         answers = AnswerModel.query.filter_by(author=user.name).order_by(AnswerModel.date_posted.desc()).all()
+        change_password_form = ChangePasswordForm()
         return render_template("profile.html", user=user, title="Profile", questions=questions, answers=answers,
-                               form=form)
+                               form=form, change_password_form=change_password_form)
+
+    @app.route('/request-otp', methods=['POST'])
+    @jwt_required()
+    def request_otp():
+        user_id = get_jwt_identity()
+        user = UserModel.query.filter_by(id=user_id).first()
+        if not user:
+            return jsonify({"message": "User not found."}), 404
+        otp = ''.join(random.choices(string.digits, k=6))
+        user.otp = otp
+        user.otp_expiry = datetime.utcnow() + timedelta(minutes=10)
+        db.session.commit()
+        try:
+            msg = Message("Your OTP for Password Change", recipients=[user.email])
+            msg.body = f"Your OTP is {otp}. It is valid for 10 minutes."
+            msg.html = render_template('otp_email.html', otp=otp, user=user)
+            mail.send(msg)
+            return jsonify({"message": "OTP sent to your email."}), 200
+        except Exception as e:
+            print(f"Error sending OTP email: {str(e)}")
+            return jsonify({"message": "Failed to send OTP. Please try again."}), 500
+
+    @app.route('/change-password', methods=['POST'])
+    @jwt_required()
+    def change_password():
+        user_id = get_jwt_identity()
+        user = UserModel.query.filter_by(id=user_id).first()
+        if not user:
+            flash("User not found. Please log in again.", "error")
+            return redirect(url_for('login'))
+        form = ChangePasswordForm()
+        if form.validate_on_submit():
+            if not user.otp or user.otp_expiry < datetime.utcnow():
+                flash("OTP is invalid or expired. Please request a new OTP.", "error")
+                return redirect(url_for('profile'))
+            if user.otp != form.otp.data:
+                flash("Invalid OTP. Please try again.", "error")
+                return redirect(url_for('profile'))
+            user.set_password(form.new_password.data)
+            user.otp = None
+            user.otp_expiry = None
+            db.session.commit()
+            flash("Password changed successfully!", "success")
+            return redirect(url_for('profile'))
+        else:
+            flash("Invalid input. Please check the form.", "error")
+        return redirect(url_for('profile'))
 
     @app.route('/logout')
     def logout():

@@ -9,6 +9,8 @@ class UserModel(db.Model):
     name = db.Column(db.String(40), unique=True, nullable=False)
     email = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(80), nullable=False)
+    otp = db.Column(db.String(6), nullable=True)
+    otp_expiry = db.Column(db.DateTime, nullable=True)
 
     def __repr__(self):
         return f"User(name='{self.name}', email='{self.email}')"
