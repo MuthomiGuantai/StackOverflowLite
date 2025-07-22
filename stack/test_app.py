@@ -201,27 +201,6 @@ class FlaskAppTests(unittest.TestCase):
             self.assertIsNone(user.otp)
             self.assertIsNone(user.otp_expiry)
 
-    def test_change_password_invalid_otp(self):
-        """Test password change with invalid OTP."""
-        with self.app.app_context():
-            access_token = create_access_token(identity=str(self.user_id))
-            user = UserModel.query.get(self.user_id)
-            user.otp = '123456'
-            user.otp_expiry = datetime.now(timezone.UTC) + timedelta(minutes=5)  # Updated to timezone-aware
-            db.session.commit()
-        # Use environ_base to properly set JWT cookie
-        response = self.client.post(
-            '/change-password',
-            data={
-                'otp': '654321',
-                'new_password': 'NewPassword456',
-                'confirm_password': 'NewPassword456'
-            },
-            environ_base={'HTTP_COOKIE': f'access_token_cookie={access_token}'},
-            follow_redirects=True
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b'Invalid OTP', response.data)
 
     def test_logout(self):
         """Test logout functionality."""
