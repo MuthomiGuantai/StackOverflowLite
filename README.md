@@ -157,26 +157,4 @@ To run tests with coverage:pytest --cov=app
 
 Test the API using Postman to verify functionality.
 
-Continuous Integration
 
-TravisCI: Configured for continuous integration. See .travis.yml for details.
-Coveralls: Tracks test coverage. See coverage reports at Coveralls.
-Badges:
-
-
-
-
-
-
-Deployment
-The application is hosted on Heroku at https://yourapp.herokuapp.com.
-Contributing
-
-Fork the repository.
-Create a feature branch (git checkout -b feature/your-feature).
-Commit your changes (git commit -m 'Add your feature').
-Push to the branch (git push origin feature/your-feature).
-Create a pull request on GitHub for review.
-
-License
-This project is licensed under the MIT License. See the LICENSE file for details.
