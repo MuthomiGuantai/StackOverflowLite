@@ -149,11 +149,6 @@ Response
   }
 }
 
-Testing
-
-Tests are written using PyTest and cover all API endpoints.
-To run tests with coverage:pytest --cov=app
-
 
 Test the API using Postman to verify functionality.
 
